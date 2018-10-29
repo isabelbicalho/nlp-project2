@@ -8,17 +8,8 @@
 # References: Coursera: deeplearning.ai - Sequence Models
 
 
-# Implements LSTM network
-#
-# Equations:
-# forget_gate     = sigmoid(W_f.[a_prev, x_t] + b_f)
-# update_gate     = sigmoid(W_u.[a_prev, x_t] + b_u)
-# candidate_value = tanh(W_c.[a_prev, x_t] + c_prev)
-# new_cell        = forget_gate * cell_prev + update_gate * candidate_value
-# output_gate     = sigmoid(W_o.[a_prev, x_t] + b_o)
-# a               = output_gate * tanh(new_cell)
-
 import numpy as np
+
 from utils import sigmoid
 from utils import softmax
 
@@ -130,6 +121,14 @@ class LSTM(object):
         n_x, m   = x_t.shape
         n_y, n_a = W_y.shape
 
+        # Equations:
+        # forget_gate     = sigmoid(W_f.[a_prev, x_t] + b_f)
+        # update_gate     = sigmoid(W_u.[a_prev, x_t] + b_u)
+        # candidate_value = tanh(W_c.[a_prev, x_t] + c_prev)
+        # new_cell        = forget_gate * cell_prev + update_gate * candidate_value
+        # output_gate     = sigmoid(W_o.[a_prev, x_t] + b_o)
+        # a               = output_gate * tanh(new_cell)
+
         # Concatenate a_prev and x_t
         concat = np.zeros((n_a + n_x, m))
         concat[:n_a, :] = a_prev
@@ -161,3 +160,49 @@ class LSTM(object):
         }
 
         return a_next, c_next, y_t_pred, cache
+
+    def cell_backward(self, da_next, dc_next, cache):
+        """
+        Implement the backward pass for the LSTM-cell
+
+        Arguments:
+        da_next -- Gradients of next hidden state. Has shape (n_a, m).
+        dc_next -- Gradients of next cell state.   Has shape (n_a, m).
+        cache   -- Cache storing information from the forward pass.
+
+        Returns:
+        gradients -- Python dictionary containing:
+            dx_t    -- Gradient of input data at time-step "t".              Has shape (n_x, m).
+            da_prev -- Gradient w.r.t. the previous hidden state.            Numpy array of shape (n_a, m).
+            dc_prev -- Gradient w.r.t. the previous memory state.            Has shape (n_a, m, T_x).
+            dW_f    -- Gradient w.r.t. the weight matrix of the forget gate. Numpy array of shape (n_a, n_a + n_x).
+            dW_u    -- Gradient w.r.t. the weight matrix of the update gate. Numpy array of shape (n_a, n_a + n_x).
+            dW_c    -- Gradient w.r.t. the weight matrix of the memory gate. Numpy array of shape (n_a, n_a + n_x).
+            dW_o    -- Gradient w.r.t. the weight matrix of the output gate. Numpy array of shape (n_a, n_a + n_x).
+            db_f    -- Gradient w.r.t. biases of the forget gate.            Numpy array of shape (n_a, 1).
+            db_u    -- Gradient w.r.t. biases of the update gate.            Numpy array of shape (n_a, 1).
+            db_c    -- Gradient w.r.t. biases of the memory gate.            Numpy array of shape (n_a, 1).
+            db_o    -- Gradient w.r.t. biases of the output gate.            Numpy array of shape (n_a, 1).
+        """
+
+        # Retrieve information from "cache"
+        a_next =          cache["a_next"]
+        c_next =          cache["c_next"]
+        a_prev =          cache["a_prev"]
+        c_prev =          cache["c_prev"]
+        forget_gate =     cache["forget_gate"]
+        update_gate =     cache["update_gate"]
+        candidate_value = cache["candidate_value"]
+        output_gate =     cache["output_gate"]
+        x_t =             cache["x_t"]
+        parameters =      cache["parameters"]
+
+        # Retireve dimensions from x_t's shape and a_next's shape
+        n_x, m = x_t.shape
+        n_a, m = a_next.shape
+
+        # Compute the gates related derivatives
+        doutput_gate     = 
+        dcandidate_value = 
+        dupdate_state = 
+        dforget_state = 
