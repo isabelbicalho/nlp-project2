@@ -173,8 +173,8 @@ class LSTM(object):
         Returns:
         gradients -- Python dictionary containing:
             dx_t    -- Gradient of input data at time-step "t".              Has shape (n_x, m).
-            da_prev -- Gradient w.r.t. the previous hidden state.            Numpy array of shape (n_a, m).
-            dc_prev -- Gradient w.r.t. the previous memory state.            Has shape (n_a, m, T_x).
+            da_next -- Gradient w.r.t. the previous hidden state.            Numpy array of shape (n_a, m).
+            dc_next -- Gradient w.r.t. the previous memory state.            Has shape (n_a, m, T_x).
             dW_f    -- Gradient w.r.t. the weight matrix of the forget gate. Numpy array of shape (n_a, n_a + n_x).
             dW_u    -- Gradient w.r.t. the weight matrix of the update gate. Numpy array of shape (n_a, n_a + n_x).
             dW_c    -- Gradient w.r.t. the weight matrix of the memory gate. Numpy array of shape (n_a, n_a + n_x).
@@ -202,7 +202,20 @@ class LSTM(object):
         n_a, m = a_next.shape
 
         # Compute the gates related derivatives
-        doutput_gate     = 
-        dcandidate_value = 
-        dupdate_state = 
-        dforget_state = 
+        doutput_gate     = da_next * np.tanh(c_next) * output_gate * (1 - output_gate)
+        dcandidate_value = dc_next * update_gate + np.dot(output_gate, (1 - np.tanh(c_next)**2) * update_gate * da_next * candidate_value * (1 - np.tanh(candidate_value)**2)
+        dupdate_state    = dc_next * candidate_value + np.dot(output_gate, (1 - np.tanh(c_next)**2)) * candidate_value * da_next * update_gate * (1 - update_gate)
+        dforget_state    = dc_next * c_prev + np.dot(output_gate, (1 - np.tanh(c_next)**2)) * c_prev * da_next * forget_gate * (1 - forget_gate)
+
+        # Compute parameters related derivatives
+        dW_forget_gate     = np.dot(dforget_gate, np.hstack([a_prev.T, xt.T]))
+        dW_update_gate     = np.dot(dupdate_gate, np.hstack([a_prev.T, xt.T]))
+        dW_candidate_value = np.dot(dcandidate_value, np.hstack([a_prev.T, xt.T]))
+        dW_output_gate     = np.dot(doutput_gate, np.hstack([a_prev.T, xt.T]))
+        db_forget_gate     = np.sum(dofrget_gate, axis=1, keep_dims=True)
+        db_update_gate     = np.sum(dupdate_gate, axis=1, keep_dims=True)
+        db_candidate_value = np.sum(dcandidate_value, axis=1, keep_dims=True)
+        db_output_gate     = np.sum(doutput_gate, axis=1, keep_dims=True)
+
+        # Compute derivatives w.r.t previous hidden state, previous memory state and input.
+        da_prev = Wforget_gate.T
